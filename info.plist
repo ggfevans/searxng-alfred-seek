@@ -8,7 +8,7 @@
 	<string>Internet</string>
 	<key>connections</key>
 	<dict>
-		<key>A597C019-17C0-4EFC-8209-C78914AB31B3</key>
+		<key>A7087C90-0C31-4269-983C-868379879BA7</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
@@ -22,30 +22,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>0220E219-39E7-431D-A3D4-D3AB3583A16B</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitowards</key>
-				<string>right</string>
-			</dict>
-		</array>
-		<key>A7087C90-0C31-4269-983C-868379879BA7</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>A597C019-17C0-4EFC-8209-C78914AB31B3</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitowards</key>
-				<string></string>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>A597C019-17C0-4EFC-8209-C78914AB31B3</string>
+				<string>110802D2-8EA0-42A2-9E3F-EF61E70504E7</string>
 				<key>modifiers</key>
 				<integer>524288</integer>
 				<key>modifiersubtext</key>
@@ -58,9 +35,9 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>A597C019-17C0-4EFC-8209-C78914AB31B3</string>
+				<string>A90F3B4C-C814-4CF0-9010-78FA06412154</string>
 				<key>modifiers</key>
-				<integer>1048576</integer>
+				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
 				<key>vitowards</key>
@@ -130,36 +107,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>conditions</key>
-				<array>
-					<dict>
-						<key>inputstring</key>
-						<string>{var:action}</string>
-						<key>matchcasesensitive</key>
-						<false/>
-						<key>matchmode</key>
-						<integer>0</integer>
-						<key>matchstring</key>
-						<string>copy</string>
-						<key>outputlabel</key>
-						<string>Copy URL</string>
-						<key>uid</key>
-						<string>copy-condition</string>
-					</dict>
-				</array>
-				<key>elselabel</key>
-				<string>Open URL</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.conditional</string>
-			<key>uid</key>
-			<string>A597C019-17C0-4EFC-8209-C78914AB31B3</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>browser</key>
 				<string></string>
 				<key>spaces</key>
@@ -173,21 +120,6 @@
 			<string>110802D2-8EA0-42A2-9E3F-EF61E70504E7</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>clipboardtext</key>
-				<string>{query}</string>
-				<key>transient</key>
-				<false/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.clipboard</string>
-			<key>uid</key>
-			<string>0220E219-39E7-431D-A3D4-D3AB3583A16B</string>
-			<key>version</key>
-			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -262,36 +194,24 @@ Now when you type anything and press Enter, it searches SearXNG!
 - Type `sx` followed by your search query (shows results in Alfred)
 - Or use as fallback search (opens SearXNG in browser)
 - Press Enter to open the result in your browser
-- Press Cmd to copy the URL
-- Press Option to open the search in SearXNG web interface
-- Press Shift for Quick Look preview
+- Press ⌘C to copy the URL
+- Press ⌘L to show the title in Large Type
+- Press ⌥ Enter to open the search in SearXNG web interface
+- Press Shift or ⌘Y for Quick Look preview
 
 ## Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
 | Enter | Open URL in browser |
-| Cmd | Copy URL to clipboard |
-| Option | View in SearXNG web UI |
-| Shift | Quick Look preview |
+| ⌘C | Copy URL to clipboard |
+| ⌘L | Show title in Large Type |
+| ⌥ Enter | View in SearXNG web UI |
+| Shift / ⌘Y | Quick Look preview |
 </string>
 	<key>uidata</key>
 	<dict>
-		<key>0220E219-39E7-431D-A3D4-D3AB3583A16B</key>
-		<dict>
-			<key>xpos</key>
-			<real>490</real>
-			<key>ypos</key>
-			<real>170</real>
-		</dict>
 		<key>110802D2-8EA0-42A2-9E3F-EF61E70504E7</key>
-		<dict>
-			<key>xpos</key>
-			<real>490</real>
-			<key>ypos</key>
-			<real>50.0</real>
-		</dict>
-		<key>A597C019-17C0-4EFC-8209-C78914AB31B3</key>
 		<dict>
 			<key>xpos</key>
 			<real>270</real>
@@ -304,6 +224,20 @@ Now when you type anything and press Enter, it searches SearXNG!
 			<real>50</real>
 			<key>ypos</key>
 			<real>50</real>
+		</dict>
+		<key>A90F3B4C-C814-4CF0-9010-78FA06412154</key>
+		<dict>
+			<key>xpos</key>
+			<real>270</real>
+			<key>ypos</key>
+			<real>170</real>
+		</dict>
+		<key>B8F3D2A1-5E4C-4B9A-8D7F-1A2B3C4D5E6F</key>
+		<dict>
+			<key>xpos</key>
+			<real>50</real>
+			<key>ypos</key>
+			<real>170</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>

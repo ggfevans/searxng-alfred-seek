@@ -422,12 +422,11 @@ function resultToAlfredItem(result, query, searxngUrl, secretKey) {
 		icon: { path: iconPath },
 		quicklookurl: result.url,
 		match: alfredMatcher(result.title) + " " + alfredMatcher(snippet),
+		text: {
+			copy: result.url,
+			largetype: result.title || result.url,
+		},
 		mods: {
-			cmd: {
-				arg: result.url,
-				subtitle: "⌘: Copy URL",
-				variables: { action: "copy" },
-			},
 			alt: {
 				arg: searchUrl,
 				subtitle: "⌥: View in SearXNG",
