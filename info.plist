@@ -200,6 +200,19 @@
        - html
        - json
 
+### Favicons (Optional)
+
+To display website favicons in search results:
+
+1. Enable favicon support in your SearXNG settings.yml:
+
+   search:
+     favicon_resolver: "duckduckgo"
+
+2. Copy your secret_key from settings.yml (server.secret_key) into the workflow configuration
+
+Favicons are fetched through your own SearXNG instance's favicon proxy, preserving privacy.
+
 ## Usage
 
 - Type `sx` followed by your search query
@@ -291,6 +304,27 @@
 			<string>textfield</string>
 			<key>variable</key>
 			<string>timeout_ms</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>placeholder</key>
+				<string>ultrasecretkey</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Secret key from your SearXNG settings.yml (server.secret_key). Required to display website favicons via SearXNG's favicon proxy. Leave empty to disable favicons.</string>
+			<key>label</key>
+			<string>Secret Key (for favicons)</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>secret_key</string>
 		</dict>
 	</array>
 	<key>version</key>

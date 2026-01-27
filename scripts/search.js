@@ -55,6 +55,7 @@ function parseTimeout(value, defaultMs = 5000, maxMs = 30000) {
 const CONFIG = {
 	searxngUrl: getEnv("searxng_url"),
 	timeoutMs: parseTimeout(getEnv("timeout_ms", "5000")),
+	secretKey: getEnv("secret_key", ""), // For SearXNG favicon proxy HMAC
 };
 
 // ============================================================================
@@ -234,17 +235,56 @@ function getCachedFavicon(domain) {
 }
 
 /**
- * Fetch favicon from Google's favicon service and save to cache.
- * Uses https://www.google.com/s2/favicons service for reliable favicon retrieval.
+ * Compute HMAC-SHA256 for SearXNG favicon proxy authentication.
+ * Uses openssl which is available on all macOS systems.
+ * @param {string} secretKey - SearXNG server secret key
+ * @param {string} authority - Domain name to authenticate
+ * @returns {string|null} Hex-encoded HMAC or null on failure
+ */
+function computeHmac(secretKey, authority) {
+	try {
+		// HMAC-SHA256 using openssl (matches SearXNG's new_hmac function)
+		// printf ensures no trailing newline, awk extracts just the hex digest
+		const cmd = `printf '%s' ${shellEscape(authority)} | openssl dgst -sha256 -hmac ${shellEscape(secretKey)} | awk '{print $2}'`;
+		const hmac = app.doShellScript(cmd);
+		return hmac.trim();
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Build SearXNG favicon proxy URL with HMAC authentication.
+ * @param {string} searxngUrl - Base SearXNG URL
+ * @param {string} secretKey - SearXNG server secret key
+ * @param {string} domain - Domain name
+ * @returns {string|null} Favicon proxy URL or null if HMAC fails
+ */
+function buildFaviconProxyUrl(searxngUrl, secretKey, domain) {
+	const hmac = computeHmac(secretKey, domain);
+	if (!hmac) {
+		return null;
+	}
+	return `${searxngUrl}/favicon_proxy?authority=${encodeURIComponent(domain)}&h=${hmac}`;
+}
+
+/**
+ * Fetch favicon from SearXNG's native favicon proxy and save to cache.
+ * Uses the user's own SearXNG instance for privacy-preserving favicon retrieval.
  * @param {string} domain - Domain name (e.g., "github.com")
+ * @param {string} searxngUrl - Base SearXNG URL
+ * @param {string} secretKey - SearXNG server secret key
  * @returns {string|null} Path to saved favicon or null on failure
  */
-function fetchFavicon(domain) {
+function fetchFavicon(domain, searxngUrl, secretKey) {
 	const cacheDir = getCacheDir();
 	const faviconPath = `${cacheDir}/${sanitizeDomainForFilename(domain)}.png`;
 
-	// Google favicon service URL (sz=64 for higher resolution)
-	const faviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+	// Build SearXNG favicon proxy URL with HMAC
+	const faviconUrl = buildFaviconProxyUrl(searxngUrl, secretKey, domain);
+	if (!faviconUrl) {
+		return null;
+	}
 
 	try {
 		// Download favicon with curl
@@ -277,10 +317,18 @@ function fetchFavicon(domain) {
 
 /**
  * Get favicon path for a domain, fetching and caching if needed.
+ * Requires secret_key to be configured for SearXNG favicon proxy access.
  * @param {string} domain - Domain name (e.g., "github.com")
+ * @param {string} searxngUrl - Base SearXNG URL
+ * @param {string} secretKey - SearXNG server secret key
  * @returns {string} Path to favicon (cached, fetched, or generic fallback)
  */
-function getFaviconPath(domain) {
+function getFaviconPath(domain, searxngUrl, secretKey) {
+	// If no secret key configured, favicons are disabled
+	if (!secretKey) {
+		return "icon.png";
+	}
+
 	// Check cache first
 	const cached = getCachedFavicon(domain);
 	if (cached) {
@@ -294,8 +342,8 @@ function getFaviconPath(domain) {
 
 	faviconFetchesThisSearch++;
 
-	// Try to fetch and cache
-	const fetched = fetchFavicon(domain);
+	// Try to fetch and cache via SearXNG's favicon proxy
+	const fetched = fetchFavicon(domain, searxngUrl, secretKey);
 	if (fetched) {
 		return fetched;
 	}
@@ -354,16 +402,17 @@ function fallbackItem(query, searxngUrl) {
  * @param {object} result - SearXNG result object
  * @param {string} query - Original search query
  * @param {string} searxngUrl - SearXNG base URL
+ * @param {string} secretKey - SearXNG server secret key (for favicons)
  * @returns {object} Alfred item
  */
-function resultToAlfredItem(result, query, searxngUrl) {
+function resultToAlfredItem(result, query, searxngUrl, secretKey) {
 	const domain = extractDomain(result.url);
 	const snippet = truncate(result.content || "", 80);
 	const subtitle = snippet ? `${domain} · ${snippet}` : domain;
 	const searchUrl = `${searxngUrl}/search?q=${encodeURIComponent(query)}`;
 
-	// Get favicon for this domain
-	const iconPath = getFaviconPath(domain);
+	// Get favicon for this domain (requires secret_key for SearXNG proxy)
+	const iconPath = getFaviconPath(domain, searxngUrl, secretKey);
 
 	return {
 		title: result.title || result.url,
@@ -402,6 +451,7 @@ function search(query) {
 	// Remove trailing slash from URL if present
 	const searxngUrl = CONFIG.searxngUrl.replace(/\/+$/, "");
 	const timeoutMs = CONFIG.timeoutMs;
+	const secretKey = CONFIG.secretKey;
 
 	// Guard: No SearXNG URL configured
 	if (!searxngUrl) {
@@ -518,7 +568,7 @@ function search(query) {
 
 	// Transform results to Alfred items
 	const items = data.results.map((result) =>
-		resultToAlfredItem(result, query, searxngUrl)
+		resultToAlfredItem(result, query, searxngUrl, secretKey)
 	);
 
 	// Add fallback item at the end
