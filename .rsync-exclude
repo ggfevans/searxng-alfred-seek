@@ -27,5 +27,9 @@ biome.jsonc
 *.d.ts
 jsconfig.json
 
+# local config
+.env
+.env.example
+
 # other
 *.alfredworkflow

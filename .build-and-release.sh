@@ -23,10 +23,16 @@ fi
 plutil -replace version -string "$next_version" info.plist
 
 # update version number in LOCAL `info.plist`
-# INFO this assumes the local folder is named the same as the github repo
-prefs_location=$(defaults read com.runningwithcrayons.Alfred-Preferences syncfolder | sed "s|^~|$HOME|")
-workflow_uid="$(basename "$PWD")"
-local_info_plist="$prefs_location/Alfred.alfredpreferences/workflows/$workflow_uid/info.plist"
+# Read WORKFLOW_UID from .env file
+if [[ -f .env ]]; then
+	source .env
+fi
+if [[ -z "$WORKFLOW_UID" ]]; then
+	print "\e[1;31mError: WORKFLOW_UID not set. Copy .env.example to .env and configure it.\e[0m"
+	return 1
+fi
+prefs_location=$(defaults read com.runningwithcrayons.Alfred-Preferences syncfolder 2>/dev/null | sed "s|^~|$HOME|" || echo "$HOME/Library/Application Support/Alfred")
+local_info_plist="$prefs_location/Alfred.alfredpreferences/workflows/$WORKFLOW_UID/info.plist"
 if [[ -f "$local_info_plist" ]]; then
 	plutil -replace version -string "$next_version" "$local_info_plist"
 else

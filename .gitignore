@@ -4,3 +4,6 @@
 # Alfred
 prefs.plist
 *.alfredworkflow
+
+# Local config (use .env.example as template)
+.env
