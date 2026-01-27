@@ -146,7 +146,7 @@ ObjC.import("Foundation");
 
 // Track favicon fetches per search to limit network requests
 let faviconFetchesThisSearch = 0;
-const MAX_FAVICON_FETCHES_PER_SEARCH = 3;
+const MAX_FAVICON_FETCHES_PER_SEARCH = 10;
 
 // Memoized directory paths (initialized on first use)
 let cachedWorkflowDataDir = null;
@@ -244,8 +244,9 @@ function getCachedFavicon(domain) {
 function computeHmac(secretKey, authority) {
 	try {
 		// HMAC-SHA256 using openssl (matches SearXNG's new_hmac function)
-		// printf ensures no trailing newline, awk extracts just the hex digest
-		const cmd = `printf '%s' ${shellEscape(authority)} | openssl dgst -sha256 -hmac ${shellEscape(secretKey)} | awk '{print $2}'`;
+		// printf ensures no trailing newline
+		// macOS LibreSSL outputs just the hex digest (no prefix)
+		const cmd = `printf '%s' ${shellEscape(authority)} | openssl dgst -sha256 -hmac ${shellEscape(secretKey)}`;
 		const hmac = app.doShellScript(cmd);
 		return hmac.trim();
 	} catch {

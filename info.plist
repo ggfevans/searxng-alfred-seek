@@ -53,6 +53,9 @@
 				<key>vitowards</key>
 				<string></string>
 			</dict>
+		</array>
+		<key>B8F3D2A1-5E4C-4B9A-8D7F-1A2B3C4D5E6F</key>
+		<array>
 			<dict>
 				<key>destinationuid</key>
 				<string>A597C019-17C0-4EFC-8209-C78914AB31B3</string>
@@ -186,6 +189,36 @@
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>text</key>
+				<string>Search SearXNG</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.fallback</string>
+			<key>uid</key>
+			<string>B8F3D2A1-5E4C-4B9A-8D7F-1A2B3C4D5E6F</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{var:searxng_url}/search?q={query}</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>A90F3B4C-C814-4CF0-9010-78FA06412154</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Search your personal SearXNG instance directly from Alfred.
@@ -213,9 +246,21 @@ To display website favicons in search results:
 
 Favicons are fetched through your own SearXNG instance's favicon proxy, preserving privacy.
 
+### Replace Default Web Search (Optional)
+
+To use SearXNG as your default fallback search (instead of Google):
+
+1. Open Alfred Preferences → Features → Default Results
+2. Click "Setup fallback results" at the bottom
+3. Click + and find "Search SearXNG" under this workflow
+4. Drag it to the top of the list (or remove Google)
+
+Now when you type anything and press Enter, it searches SearXNG!
+
 ## Usage
 
-- Type `sx` followed by your search query
+- Type `sx` followed by your search query (shows results in Alfred)
+- Or use as fallback search (opens SearXNG in browser)
 - Press Enter to open the result in your browser
 - Press Cmd to copy the URL
 - Press Option to open the search in SearXNG web interface
@@ -244,14 +289,14 @@ Favicons are fetched through your own SearXNG instance's favicon proxy, preservi
 			<key>xpos</key>
 			<real>490</real>
 			<key>ypos</key>
-			<real>50</real>
+			<real>50.0</real>
 		</dict>
 		<key>A597C019-17C0-4EFC-8209-C78914AB31B3</key>
 		<dict>
 			<key>xpos</key>
 			<real>270</real>
 			<key>ypos</key>
-			<real>50</real>
+			<real>50.0</real>
 		</dict>
 		<key>A7087C90-0C31-4269-983C-868379879BA7</key>
 		<dict>
