@@ -84,6 +84,16 @@ function truncate(text, maxLength) {
 }
 
 /**
+ * Shell-escape a string for safe interpolation into shell commands.
+ * Wraps string in single quotes and escapes any embedded single quotes.
+ * @param {string} str - String to escape
+ * @returns {string} Shell-safe escaped string
+ */
+function shellEscape(str) {
+	return "'" + str.replace(/'/g, "'\\''") + "'";
+}
+
+/**
  * Perform HTTP GET request.
  * @param {string} url - URL to fetch
  * @param {number} timeoutSecs - Timeout in seconds
@@ -91,8 +101,10 @@ function truncate(text, maxLength) {
  */
 function httpGet(url, timeoutSecs) {
 	try {
-		// Simple curl request - JXA's doShellScript has issues with complex output parsing
-		const curlCmd = `curl --silent --location --max-time ${timeoutSecs} "${url}"`;
+		// Shell-escape URL to prevent command injection
+		// Use -- to prevent URLs starting with - from being interpreted as options
+		const escapedUrl = shellEscape(url);
+		const curlCmd = `curl --silent --location --max-time ${timeoutSecs} -- ${escapedUrl}`;
 		const response = app.doShellScript(curlCmd);
 
 		// Check for curl errors (when curl itself fails)
