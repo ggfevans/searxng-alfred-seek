@@ -188,6 +188,93 @@ function parseBangs(query) {
 }
 
 /**
+ * Parse SearXNG autocomplete response.
+ * Response format: ["query", ["suggestion1", "suggestion2", ...]]
+ * @param {string} responseData - Raw JSON response string
+ * @returns {string[]} Array of suggestions or empty array on error
+ */
+function parseAutocompleteResponse(responseData) {
+	if (!responseData) return [];
+	try {
+		const parsed = JSON.parse(responseData);
+		if (!Array.isArray(parsed) || parsed.length < 2 || !Array.isArray(parsed[1])) {
+			return [];
+		}
+		return parsed[1];
+	} catch {
+		return [];
+	}
+}
+
+/**
+ * Convert an autocomplete suggestion to an Alfred item.
+ * @param {string} suggestion - Suggestion text
+ * @param {string|null} category - Inherited category from bangs
+ * @param {string|null} timeRange - Inherited time range from bangs
+ * @returns {object} Alfred item
+ */
+function suggestionToAlfredItem(suggestion, category, timeRange) {
+	// Build contextual subtitle
+	let subtitle = "Search";
+	if (category) {
+		subtitle += ` ${category}`;
+	}
+	if (timeRange) {
+		const timeLabels = { day: "past day", month: "past month", year: "past year" };
+		subtitle += ` (${timeLabels[timeRange] || timeRange})`;
+	}
+	subtitle += " for this suggestion";
+
+	const item = {
+		title: suggestion,
+		subtitle: subtitle,
+		arg: suggestion,
+		autocomplete: suggestion,
+		valid: true,
+		icon: { path: "icon.png" },
+	};
+
+	// Pass bang context as variables for potential rerun
+	if (category || timeRange) {
+		item.variables = {};
+		if (category) item.variables.category = category;
+		if (timeRange) item.variables.timeRange = timeRange;
+	}
+
+	return item;
+}
+
+/**
+ * Determine if query is long enough to show full search results.
+ * Short queries (≤3 chars) show only autocomplete for speed.
+ * Longer queries show both autocomplete and full results.
+ * @param {string} query - Clean query (after bang extraction)
+ * @returns {boolean} True if full results should be fetched
+ */
+function shouldShowFullResults(query) {
+	const trimmed = query.trim();
+	return trimmed.length > 3;
+}
+
+/**
+ * Fetch autocomplete suggestions from SearXNG.
+ * @param {string} query - Search query
+ * @param {string} searxngUrl - Base SearXNG URL
+ * @param {number} timeoutSecs - Timeout in seconds
+ * @returns {string[]} Array of suggestions or empty array on error
+ */
+function fetchAutocomplete(query, searxngUrl, timeoutSecs) {
+	const autocompleteUrl = `${searxngUrl}/autocompleter?q=${encodeURIComponent(query)}`;
+	const response = httpGet(autocompleteUrl, Math.min(timeoutSecs, 2)); // Max 2s for autocomplete
+
+	if (!response.success || !response.data) {
+		return [];
+	}
+
+	return parseAutocompleteResponse(response.data);
+}
+
+/**
  * Perform HTTP GET request.
  * @param {string} url - URL to fetch
  * @param {number} timeoutSecs - Timeout in seconds
@@ -503,6 +590,19 @@ function fallbackItem(query, searxngUrl, category, timeRange) {
 }
 
 /**
+ * Create a visual separator item for Alfred display.
+ * @param {string} label - Separator label
+ * @returns {object} Alfred item (not selectable)
+ */
+function separatorItem(label) {
+	return {
+		title: `── ${label} ──`,
+		valid: false,
+		icon: { path: "icon.png" },
+	};
+}
+
+/**
  * Transform a SearXNG result into an Alfred item.
  * @param {object} result - SearXNG result object
  * @param {string} query - Original search query
@@ -616,6 +716,31 @@ function search(query) {
 		};
 	}
 
+	const timeoutSecs = Math.ceil(timeoutMs / 1000);
+
+	// Fetch autocomplete suggestions (always, for any query length)
+	const suggestions = fetchAutocomplete(cleanQuery, searxngUrl, timeoutSecs);
+	const suggestionItems = suggestions.map((s) =>
+		suggestionToAlfredItem(s, parsed.category, parsed.timeRange)
+	);
+
+	// Short queries: return autocomplete only for speed
+	if (!shouldShowFullResults(cleanQuery)) {
+		const items = [...suggestionItems];
+		// Add fallback if no suggestions
+		if (items.length === 0) {
+			items.push(fallbackItem(cleanQuery, searxngUrl, parsed.category, parsed.timeRange));
+		}
+		return {
+			items: items,
+			cache: {
+				seconds: 30,
+				loosereload: true,
+			},
+		};
+	}
+
+	// Longer queries: fetch full results too
 	// Build search URL with optional category and time_range
 	let searchUrl = `${searxngUrl}/search?q=${encodeURIComponent(cleanQuery)}&format=json`;
 	if (parsed.category) {
@@ -624,7 +749,6 @@ function search(query) {
 	if (parsed.timeRange) {
 		searchUrl += `&time_range=${encodeURIComponent(parsed.timeRange)}`;
 	}
-	const timeoutSecs = Math.ceil(timeoutMs / 1000);
 
 	// Perform HTTP request
 	const response = httpGet(searchUrl, timeoutSecs);
@@ -703,6 +827,24 @@ function search(query) {
 		const noResultsSubtitle = filterInfo
 			? `Try different keywords · ${filterInfo}`
 			: "Try different keywords";
+		// Return suggestions if available, otherwise show no results error
+		if (suggestionItems.length > 0) {
+			return {
+				items: [
+					...suggestionItems,
+					separatorItem("No Results"),
+					errorItem(
+						"🔍 No results found",
+						noResultsSubtitle,
+						`${searxngUrl}/search?q=${encodeURIComponent(cleanQuery)}`
+					),
+				],
+				cache: {
+					seconds: 60,
+					loosereload: true,
+				},
+			};
+		}
 		return {
 			items: [
 				errorItem(
@@ -715,9 +857,17 @@ function search(query) {
 	}
 
 	// Transform results to Alfred items
-	const items = data.results.map((result) =>
+	const resultItems = data.results.map((result) =>
 		resultToAlfredItem(result, cleanQuery, searxngUrl, secretKey, parsed.category, parsed.timeRange)
 	);
+
+	// Combine: suggestions first, then separator, then results
+	const items = [];
+	if (suggestionItems.length > 0) {
+		items.push(...suggestionItems);
+		items.push(separatorItem("Results"));
+	}
+	items.push(...resultItems);
 
 	// Add fallback item at the end
 	items.push(fallbackItem(cleanQuery, searxngUrl, parsed.category, parsed.timeRange));
