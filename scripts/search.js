@@ -423,6 +423,7 @@ function getCachedFavicon(domain) {
  * @returns {string} Normalized hex-only HMAC
  */
 function normalizeHmacOutput(output) {
+	if (output == null) return "";
 	const trimmed = output.trim();
 	// Handle OpenSSL's prefixed format: "LABEL(stdin)= HASH"
 	// The '= ' (equals followed by space) is the delimiter before the hash

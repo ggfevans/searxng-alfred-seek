@@ -15,7 +15,7 @@ const searchJs = fs.readFileSync(
 	"utf-8"
 );
 const normalizeHmacMatch = searchJs.match(
-	/function normalizeHmacOutput\(output\) \{[\s\S]*?return trimmed;\s*\}/
+	/function normalizeHmacOutput\(output\) \{[\s\S]*?\/\/ LibreSSL format[\s\S]*?return trimmed;\s*\}/
 );
 if (!normalizeHmacMatch) {
 	throw new Error("Could not find normalizeHmacOutput function in search.js");
@@ -75,5 +75,15 @@ describe("normalizeHmacOutput", () => {
 		// Hypothetical edge case: if prefix somehow contains "= "
 		const result = normalizeHmacOutput(`weird= label= ${expectedHash}`);
 		assert.strictEqual(result, expectedHash);
+	});
+
+	it("handles null input gracefully", () => {
+		const result = normalizeHmacOutput(null);
+		assert.strictEqual(result, "");
+	});
+
+	it("handles undefined input gracefully", () => {
+		const result = normalizeHmacOutput(undefined);
+		assert.strictEqual(result, "");
 	});
 });
