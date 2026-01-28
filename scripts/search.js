@@ -445,7 +445,7 @@ function formatFilterSubtitle(category, timeRange) {
 		parts.push(category.charAt(0).toUpperCase() + category.slice(1));
 	}
 	if (timeRange) {
-		const timeLabels = { day: "Past day", week: "Past week", month: "Past month", year: "Past year" };
+		const timeLabels = { day: "Past day", month: "Past month", year: "Past year" };
 		parts.push(timeLabels[timeRange] || timeRange);
 	}
 	return parts.join(" · ");
@@ -699,11 +699,15 @@ function search(query) {
 
 	// Guard: No results
 	if (!data.results || data.results.length === 0) {
+		const filterInfo = formatFilterSubtitle(parsed.category, parsed.timeRange);
+		const noResultsSubtitle = filterInfo
+			? `Try different keywords · ${filterInfo}`
+			: "Try different keywords";
 		return {
 			items: [
 				errorItem(
 					"🔍 No results found",
-					"Try different keywords",
+					noResultsSubtitle,
 					`${searxngUrl}/search?q=${encodeURIComponent(cleanQuery)}`
 				),
 			],
