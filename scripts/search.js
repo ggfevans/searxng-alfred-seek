@@ -577,16 +577,40 @@ function formatFilterSubtitle(category, timeRange) {
 
 /**
  * Create an error item for Alfred display.
+ * Includes debug info accessible via Cmd+C (copy) and Cmd+L (largetype).
  * @param {string} title - Error title
  * @param {string} subtitle - Error description
  * @param {string} [arg] - URL to open on Enter
+ * @param {object} [details] - Additional debug context (query, url, etc.)
  * @returns {object} Alfred item
  */
-function errorItem(title, subtitle, arg) {
+function errorItem(title, subtitle, arg, details) {
+	// Build debug info for copy/largetype
+	const workflowVersion = getEnv("alfred_workflow_version", "unknown");
+	const alfredVersion = getEnv("alfred_version", "unknown");
+
+	let debugInfo = `${title}: ${subtitle}`;
+
+	if (details && Object.keys(details).length > 0) {
+		debugInfo += "\n\nDetails:";
+		for (const key in details) {
+			if (Object.prototype.hasOwnProperty.call(details, key)) {
+				debugInfo += `\n  ${key}: ${details[key]}`;
+			}
+		}
+	}
+
+	debugInfo += `\n\nWorkflow: v${workflowVersion}`;
+	debugInfo += `\nAlfred: ${alfredVersion}`;
+
 	const item = {
 		title: title,
 		subtitle: subtitle,
 		valid: arg ? true : false,
+		text: {
+			copy: debugInfo,
+			largetype: debugInfo,
+		},
 		mods: {
 			cmd: { valid: false, subtitle: "" },
 			alt: { valid: false, subtitle: "" },
