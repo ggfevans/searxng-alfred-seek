@@ -1,8 +1,8 @@
 # Seek: Alfred Workflow for SearXNG
 
-[![GitHub Downloads](https://img.shields.io/github/downloads/ggfevans/Seek/total?style=flat-square&logo=github)](https://github.com/ggfevans/Seek/releases)
-[![Latest Release](https://img.shields.io/github/v/release/ggfevans/Seek?style=flat-square)](https://github.com/ggfevans/Seek/releases/latest)
-[![License](https://img.shields.io/github/license/ggfevans/Seek?style=flat-square)](LICENSE)
+[![GitHub Downloads](https://img.shields.io/github/downloads/ggfevans/searxng-alfred-seek/total?style=flat-square&logo=github)](https://github.com/ggfevans/searxng-alfred-seek/releases)
+[![Latest Release](https://img.shields.io/github/v/release/ggfevans/searxng-alfred-seek?style=flat-square)](https://github.com/ggfevans/searxng-alfred-seek/releases/latest)
+[![License](https://img.shields.io/github/license/ggfevans/searxng-alfred-seek?style=flat-square)](LICENSE)
 
 Search your personal [SearXNG](https://docs.searxng.org/) instance directly from Alfred with inline results.
 
@@ -17,7 +17,7 @@ Search your personal [SearXNG](https://docs.searxng.org/) instance directly from
 
 ## Installation
 
-1. Download the latest `.alfredworkflow` from [Releases](https://github.com/ggfevans/Seek/releases/latest)
+1. Download the latest `.alfredworkflow` from [Releases](https://github.com/ggfevans/searxng-alfred-seek/releases/latest)
 2. Double-click to install in Alfred
 3. Configure your SearXNG URL in the workflow settings
 

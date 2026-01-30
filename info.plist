@@ -388,6 +388,6 @@ Now when you type anything and press Enter, it searches SearXNG!
 	<key>version</key>
 	<string>0.2.0</string>
 	<key>webaddress</key>
-	<string>https://github.com/ggfevans/Seek</string>
+	<string>https://github.com/ggfevans/searxng-alfred-seek</string>
 </dict>
 </plist>
