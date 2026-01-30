@@ -225,7 +225,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>**Seek** — Private web search via your SearXNG instance.
+	<string>**Seek** — Private web search via SearXNG. Optimized for personal instances, works with public instances too.
 
 ## Setup
 
@@ -249,6 +249,10 @@ To display website favicons in search results:
 2. Copy your secret_key from settings.yml (server.secret_key) into the workflow configuration
 
 Favicons are fetched through your own SearXNG instance's favicon proxy, preserving privacy.
+
+### Public Instances
+
+Works with any SearXNG instance with JSON enabled. Public instances won't have favicon support (requires secret_key). For full features, self-host.
 
 ### Replace Default Web Search (Optional)
 

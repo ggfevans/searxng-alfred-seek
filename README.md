@@ -4,7 +4,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/ggfevans/searxng-alfred-seek?style=flat-square)](https://github.com/ggfevans/searxng-alfred-seek/releases/latest)
 [![License](https://img.shields.io/github/license/ggfevans/searxng-alfred-seek?style=flat-square)](LICENSE)
 
-Search your personal [SearXNG](https://docs.searxng.org/) instance directly from Alfred with inline results.
+Private web search via [SearXNG](https://docs.searxng.org/) — optimized for personal instances, works with public instances too.
 
 <img width="567" height="476" alt="Alfred interface" align="center" src="https://github.com/user-attachments/assets/d2c426bc-110f-4c19-b29b-a20e70cf7bd8" />
 
@@ -77,6 +77,17 @@ To display website favicons in results:
 2. Copy the `secret_key` from your SearXNG `settings.yml` into the workflow configuration
 
 Favicons are fetched through your SearXNG instance's proxy, preserving privacy.
+
+### Using with Public Instances
+
+Seek works with any SearXNG instance that has JSON format enabled — including public instances like [searx.be](https://searx.be) or others from [searx.space](https://searx.space).
+
+**Limitations with public instances:**
+- Favicons unavailable (requires secret_key access)
+- May have rate limits or usage restrictions
+- Privacy depends on the instance operator
+
+For full features and privacy, self-hosting is recommended.
 
 ## Requirements
 
