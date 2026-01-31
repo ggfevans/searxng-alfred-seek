@@ -146,9 +146,9 @@ function parseBangs(query) {
 		"!maps": "maps",
 	};
 
-	// SearXNG only supports: day, month, year (not week)
 	const timeRangeBangs = {
 		"!d": "day",
+		"!w": "week",
 		"!m": "month",
 		"!y": "year",
 	};
@@ -237,7 +237,7 @@ function suggestionToAlfredItem(suggestion, category, timeRange) {
 		subtitle += ` ${category}`;
 	}
 	if (timeRange) {
-		const timeLabels = { day: "past day", month: "past month", year: "past year" };
+		const timeLabels = { day: "past day", week: "past week", month: "past month", year: "past year" };
 		subtitle += ` (${timeLabels[timeRange] || timeRange})`;
 	}
 	subtitle += " for this suggestion";
@@ -571,7 +571,7 @@ function formatFilterSubtitle(category, timeRange) {
 		parts.push(category.charAt(0).toUpperCase() + category.slice(1));
 	}
 	if (timeRange) {
-		const timeLabels = { day: "Past day", month: "Past month", year: "Past year" };
+		const timeLabels = { day: "Past day", week: "Past week", month: "Past month", year: "Past year" };
 		parts.push(timeLabels[timeRange] || timeRange);
 	}
 	return parts.join(" · ");

@@ -5,7 +5,7 @@
  *
  * parseBangs extracts category and time range modifiers from search queries.
  * Category bangs: !i/!images (images), !n/!news (news), !v/!videos (videos), !maps (maps)
- * Time range bangs: !d (day), !m (month), !y (year)
+ * Time range bangs: !d (day), !w (week), !m (month), !y (year)
  */
 
 const assert = require("node:assert");
@@ -89,6 +89,12 @@ describe("parseBangs", () => {
 			const result = parseBangs("!d breaking news");
 			assert.strictEqual(result.timeRange, "day");
 			assert.strictEqual(result.query, "breaking news");
+		});
+
+		it("parses !w for week time range", () => {
+			const result = parseBangs("!w python tutorials");
+			assert.strictEqual(result.timeRange, "week");
+			assert.strictEqual(result.query, "python tutorials");
 		});
 
 		it("parses !m for month time range", () => {
