@@ -2,10 +2,10 @@ name: Alfred Workflow Release
 
 on:
   push:
-    tags: ["*"]
+    tags: ["v*"]
 
 env:
-  WORKFLOW_NAME: ${{ github.event.repository.name }}
+  WORKFLOW_NAME: Seek
 
 #───────────────────────────────────────────────────────────────────────────────
 
@@ -19,10 +19,19 @@ jobs:
 
       - name: Build .alfredworkflow
         run: |
-          zip --recurse-paths --symlinks "${{ env.WORKFLOW_NAME }}.alfredworkflow" . \
-            --exclude "README.md" ".git*" "Justfile" ".build-and-release.sh" \
-            ".rsync-exclude" ".editorconfig" "docs/*" "*.d.ts" "biome.jsonc" \
-            "jsconfig.json" "LICENSE"
+          # Create bundle with only runtime files (whitelist approach)
+          zip "${{ env.WORKFLOW_NAME }}.alfredworkflow" \
+            info.plist \
+            icon.png \
+            scripts/search.js
+
+      - name: Verify bundle contents
+        run: |
+          echo "Bundle contents:"
+          unzip -l "${{ env.WORKFLOW_NAME }}.alfredworkflow"
+
+          # Verify required files exist
+          unzip -t "${{ env.WORKFLOW_NAME }}.alfredworkflow" info.plist icon.png scripts/search.js
 
       - name: Release
         uses: softprops/action-gh-release@v2
