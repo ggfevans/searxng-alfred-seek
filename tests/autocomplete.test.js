@@ -74,7 +74,7 @@ describe("parseAutocompleteResponse", () => {
 
 // Extract suggestionToAlfredItem function
 const suggestionFn = searchJs.match(
-	/function suggestionToAlfredItem\(suggestion, category, timeRange\) \{[\s\S]*?\n\}/
+	/function suggestionToAlfredItem\(suggestion, searxngUrl, category, timeRange\) \{[\s\S]*?\n\}/
 );
 if (!suggestionFn) {
 	throw new Error("Could not find suggestionToAlfredItem function in search.js");
@@ -82,34 +82,39 @@ if (!suggestionFn) {
 // eslint-disable-next-line no-eval
 const suggestionToAlfredItem = eval(`(${suggestionFn[0]})`);
 
+const MOCK_SEARXNG_URL = "https://search.example.com";
+
 describe("suggestionToAlfredItem", () => {
-	it("creates basic suggestion item", () => {
-		const item = suggestionToAlfredItem("climate change", null, null);
+	it("creates basic suggestion item with search URL", () => {
+		const item = suggestionToAlfredItem("climate change", MOCK_SEARXNG_URL, null, null);
 		assert.strictEqual(item.title, "climate change");
 		assert.strictEqual(item.subtitle, "Search for this suggestion");
-		assert.strictEqual(item.arg, "climate change");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=climate%20change");
 		assert.strictEqual(item.autocomplete, "climate change");
 		assert.strictEqual(item.valid, true);
 		assert.deepStrictEqual(item.icon, { path: "icon.png" });
 	});
 
-	it("inherits category in subtitle", () => {
-		const item = suggestionToAlfredItem("mountains", "images", null);
+	it("inherits category in subtitle and URL", () => {
+		const item = suggestionToAlfredItem("mountains", MOCK_SEARXNG_URL, "images", null);
 		assert.strictEqual(item.subtitle, "Search images for this suggestion");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=mountains&categories=images");
 	});
 
-	it("inherits time range in subtitle", () => {
-		const item = suggestionToAlfredItem("news", null, "day");
+	it("inherits time range in subtitle and URL", () => {
+		const item = suggestionToAlfredItem("news", MOCK_SEARXNG_URL, null, "day");
 		assert.strictEqual(item.subtitle, "Search (past day) for this suggestion");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=news&time_range=day");
 	});
 
 	it("inherits both category and time range", () => {
-		const item = suggestionToAlfredItem("events", "news", "month");
+		const item = suggestionToAlfredItem("events", MOCK_SEARXNG_URL, "news", "month");
 		assert.strictEqual(item.subtitle, "Search news (past month) for this suggestion");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=events&categories=news&time_range=month");
 	});
 
 	it("includes variables for bang context", () => {
-		const item = suggestionToAlfredItem("test", "images", "month");
+		const item = suggestionToAlfredItem("test", MOCK_SEARXNG_URL, "images", "month");
 		assert.deepStrictEqual(item.variables, {
 			category: "images",
 			timeRange: "month"
@@ -117,7 +122,7 @@ describe("suggestionToAlfredItem", () => {
 	});
 
 	it("omits variables when no bang context", () => {
-		const item = suggestionToAlfredItem("test", null, null);
+		const item = suggestionToAlfredItem("test", MOCK_SEARXNG_URL, null, null);
 		assert.strictEqual(item.variables, undefined);
 	});
 });
@@ -131,6 +136,125 @@ if (!thresholdFn) {
 }
 // eslint-disable-next-line no-eval
 const shouldShowFullResults = eval(`(${thresholdFn[0]})`);
+
+// Extract formatFilterSubtitle function (dependency of exactQueryItem)
+const formatFilterFn = searchJs.match(
+	/function formatFilterSubtitle\(category, timeRange\) \{[\s\S]*?\n\}/
+);
+if (!formatFilterFn) {
+	throw new Error("Could not find formatFilterSubtitle function in search.js");
+}
+// eslint-disable-next-line no-eval
+const formatFilterSubtitle = eval(`(${formatFilterFn[0]})`);
+
+// Extract exactQueryItem function
+const exactQueryFn = searchJs.match(
+	/function exactQueryItem\(query, searxngUrl, category, timeRange\) \{[\s\S]*?\n\}/
+);
+if (!exactQueryFn) {
+	throw new Error("Could not find exactQueryItem function in search.js");
+}
+// eslint-disable-next-line no-eval
+const exactQueryItem = eval(`(${exactQueryFn[0]})`);
+
+describe("exactQueryItem", () => {
+	it("creates item with exact query in title", () => {
+		const item = exactQueryItem("test query", MOCK_SEARXNG_URL, null, null);
+		assert.strictEqual(item.title, 'Search for "test query"');
+	});
+
+	it("includes search URL as arg", () => {
+		const item = exactQueryItem("my search", MOCK_SEARXNG_URL, null, null);
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=my%20search");
+	});
+
+	it("includes category in URL when present", () => {
+		const item = exactQueryItem("cats", MOCK_SEARXNG_URL, "images", null);
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=cats&categories=images");
+	});
+
+	it("includes time range in URL when present", () => {
+		const item = exactQueryItem("news", MOCK_SEARXNG_URL, null, "day");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=news&time_range=day");
+	});
+
+	it("includes both category and time range in URL", () => {
+		const item = exactQueryItem("events", MOCK_SEARXNG_URL, "news", "year");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=events&categories=news&time_range=year");
+	});
+
+	it("shows filter info in subtitle when filters active", () => {
+		const item = exactQueryItem("test", MOCK_SEARXNG_URL, "images", "month");
+		assert.strictEqual(item.subtitle, "Images · Past month");
+	});
+
+	it("shows default subtitle when no filters", () => {
+		const item = exactQueryItem("test", MOCK_SEARXNG_URL, null, null);
+		assert.strictEqual(item.subtitle, "Search SearXNG");
+	});
+
+	it("uses workflow icon", () => {
+		const item = exactQueryItem("test", MOCK_SEARXNG_URL, null, null);
+		assert.deepStrictEqual(item.icon, { path: "icon.png" });
+	});
+
+	it("is valid (can be actioned)", () => {
+		const item = exactQueryItem("test", MOCK_SEARXNG_URL, null, null);
+		assert.strictEqual(item.valid, true);
+	});
+
+	it("does not set autocomplete (prevents loop)", () => {
+		const item = exactQueryItem("test", MOCK_SEARXNG_URL, null, null);
+		assert.strictEqual(item.autocomplete, undefined);
+	});
+});
+
+// Extract shouldShowExactQueryItem function
+const shouldShowExactFn = searchJs.match(
+	/function shouldShowExactQueryItem\(query, suggestions\) \{[\s\S]*?\n\}/
+);
+if (!shouldShowExactFn) {
+	throw new Error("Could not find shouldShowExactQueryItem function in search.js");
+}
+// eslint-disable-next-line no-eval
+const shouldShowExactQueryItem = eval(`(${shouldShowExactFn[0]})`);
+
+describe("shouldShowExactQueryItem", () => {
+	it("returns true when suggestions exist and first differs from query", () => {
+		const result = shouldShowExactQueryItem("test", ["testing", "tester"]);
+		assert.strictEqual(result, true);
+	});
+
+	it("returns false when first suggestion matches query exactly", () => {
+		const result = shouldShowExactQueryItem("test", ["test", "testing"]);
+		assert.strictEqual(result, false);
+	});
+
+	it("returns false when first suggestion matches query case-insensitively", () => {
+		const result = shouldShowExactQueryItem("Test", ["test", "testing"]);
+		assert.strictEqual(result, false);
+	});
+
+	it("returns false when no suggestions", () => {
+		const result = shouldShowExactQueryItem("test", []);
+		assert.strictEqual(result, false);
+	});
+
+	it("returns false for empty query", () => {
+		const result = shouldShowExactQueryItem("", ["test"]);
+		assert.strictEqual(result, false);
+	});
+
+	it("handles whitespace in query", () => {
+		const result = shouldShowExactQueryItem("my query", ["my query", "my queries"]);
+		assert.strictEqual(result, false);
+	});
+
+	it("handles whitespace differences", () => {
+		const result = shouldShowExactQueryItem("my  query", ["my query"]);
+		assert.strictEqual(result, true);
+	});
+});
 
 describe("shouldShowFullResults", () => {
 	describe("short queries (≤3 chars) - autocomplete only", () => {

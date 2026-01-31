@@ -226,11 +226,12 @@ function parseAutocompleteResponse(responseData) {
 /**
  * Convert an autocomplete suggestion to an Alfred item.
  * @param {string} suggestion - Suggestion text
+ * @param {string} searxngUrl - Base SearXNG URL
  * @param {string|null} category - Inherited category from bangs
  * @param {string|null} timeRange - Inherited time range from bangs
  * @returns {object} Alfred item
  */
-function suggestionToAlfredItem(suggestion, category, timeRange) {
+function suggestionToAlfredItem(suggestion, searxngUrl, category, timeRange) {
 	// Build contextual subtitle
 	let subtitle = "Search";
 	if (category) {
@@ -242,10 +243,19 @@ function suggestionToAlfredItem(suggestion, category, timeRange) {
 	}
 	subtitle += " for this suggestion";
 
+	// Build search URL for the suggestion
+	let searchUrl = `${searxngUrl}/search?q=${encodeURIComponent(suggestion)}`;
+	if (category) {
+		searchUrl += `&categories=${encodeURIComponent(category)}`;
+	}
+	if (timeRange) {
+		searchUrl += `&time_range=${encodeURIComponent(timeRange)}`;
+	}
+
 	const item = {
 		title: suggestion,
 		subtitle: subtitle,
-		arg: suggestion,
+		arg: searchUrl,
 		autocomplete: suggestion,
 		valid: true,
 		icon: { path: "icon.png" },
@@ -271,6 +281,21 @@ function suggestionToAlfredItem(suggestion, category, timeRange) {
 function shouldShowFullResults(query) {
 	const trimmed = query.trim();
 	return trimmed.length > 3;
+}
+
+/**
+ * Determine if the "Search for exact query" item should be shown.
+ * Shows when there are suggestions and the first one doesn't match the query.
+ * @param {string} query - Clean query (after bang extraction)
+ * @param {string[]} suggestions - Array of autocomplete suggestions
+ * @returns {boolean} True if exact query item should be shown
+ */
+function shouldShowExactQueryItem(query, suggestions) {
+	if (!query || suggestions.length === 0) {
+		return false;
+	}
+	// Show if first suggestion doesn't match query (case-insensitive)
+	return suggestions[0].toLowerCase() !== query.toLowerCase();
 }
 
 /**
@@ -627,6 +652,34 @@ function errorItem(title, subtitle, arg, details) {
 }
 
 /**
+ * Create the "search for exact query" item.
+ * Shown at the top when autocomplete suggestions are displayed,
+ * allowing users to search their exact input instead of a suggestion.
+ * @param {string} query - Search query
+ * @param {string} searxngUrl - SearXNG base URL
+ * @param {string|null} category - Active category filter
+ * @param {string|null} timeRange - Active time range filter
+ * @returns {object} Alfred item
+ */
+function exactQueryItem(query, searxngUrl, category, timeRange) {
+	let searchUrl = `${searxngUrl}/search?q=${encodeURIComponent(query)}`;
+	if (category) {
+		searchUrl += `&categories=${encodeURIComponent(category)}`;
+	}
+	if (timeRange) {
+		searchUrl += `&time_range=${encodeURIComponent(timeRange)}`;
+	}
+	const filterInfo = formatFilterSubtitle(category, timeRange);
+	return {
+		title: `Search for "${query}"`,
+		subtitle: filterInfo || "Search SearXNG",
+		arg: searchUrl,
+		icon: { path: "icon.png" },
+		valid: true,
+	};
+}
+
+/**
  * Create the fallback "search in browser" item.
  * @param {string} query - Search query
  * @param {string} searxngUrl - SearXNG base URL
@@ -811,12 +864,17 @@ function search(query) {
 	// Fetch autocomplete suggestions (always, for any query length)
 	const suggestions = fetchAutocomplete(cleanQuery, searxngUrl, timeoutSecs);
 	const suggestionItems = suggestions.map((s) =>
-		suggestionToAlfredItem(s, parsed.category, parsed.timeRange)
+		suggestionToAlfredItem(s, searxngUrl, parsed.category, parsed.timeRange)
 	);
 
 	// Short queries: return autocomplete only for speed
 	if (!shouldShowFullResults(cleanQuery)) {
-		const items = [...suggestionItems];
+		const items = [];
+		// Add "search for exact query" option at top when suggestions differ from query
+		if (shouldShowExactQueryItem(cleanQuery, suggestions)) {
+			items.push(exactQueryItem(cleanQuery, searxngUrl, parsed.category, parsed.timeRange));
+		}
+		items.push(...suggestionItems);
 		// Add fallback if no suggestions
 		if (items.length === 0) {
 			items.push(fallbackItem(cleanQuery, searxngUrl, parsed.category, parsed.timeRange));
@@ -943,8 +1001,12 @@ function search(query) {
 		resultToAlfredItem(result, cleanQuery, searxngUrl, secretKey, parsed.category, parsed.timeRange)
 	);
 
-	// Combine: suggestions first, then separator, then results
+	// Combine: exact query option, then suggestions, then separator, then results
 	const items = [];
+	// Add "search for exact query" option at top when suggestions differ from query
+	if (shouldShowExactQueryItem(cleanQuery, suggestions)) {
+		items.push(exactQueryItem(cleanQuery, searxngUrl, parsed.category, parsed.timeRange));
+	}
 	if (suggestionItems.length > 0) {
 		items.push(...suggestionItems);
 		items.push(separatorItem("Results"));
