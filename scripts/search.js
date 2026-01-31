@@ -716,6 +716,14 @@ function resultToAlfredItem(result, query, searxngUrl, secretKey, category, time
 	// Get favicon for this domain (requires secret_key for SearXNG proxy)
 	const iconPath = getFaviconPath(domain, searxngUrl, secretKey);
 
+	// Build largetype with full context: title, content (untruncated), and URL
+	const largetypeParts = [result.title || result.url];
+	if (result.content) {
+		largetypeParts.push(result.content);
+	}
+	largetypeParts.push(result.url);
+	const largetype = largetypeParts.join("\n\n");
+
 	return {
 		title: result.title || result.url,
 		subtitle: subtitle,
@@ -725,7 +733,7 @@ function resultToAlfredItem(result, query, searxngUrl, secretKey, category, time
 		match: alfredMatcher(result.title) + " " + alfredMatcher(snippet),
 		text: {
 			copy: result.url,
-			largetype: result.title || result.url,
+			largetype: largetype,
 		},
 		mods: {
 			alt: {
