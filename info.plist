@@ -8,29 +8,6 @@
 	<string>Internet</string>
 	<key>connections</key>
 	<dict>
-		<key>C8E9F0A1-2B3C-4D5E-6F7A-8B9C0D1E2F3A</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>110802D2-8EA0-42A2-9E3F-EF61E70504E7</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitowards</key>
-				<string></string>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>110802D2-8EA0-42A2-9E3F-EF61E70504E7</string>
-				<key>modifiers</key>
-				<integer>524288</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitowards</key>
-				<string></string>
-			</dict>
-		</array>
 		<key>A7087C90-0C31-4269-983C-868379879BA7</key>
 		<array>
 			<dict>
@@ -61,6 +38,29 @@
 				<string>A90F3B4C-C814-4CF0-9010-78FA06412154</string>
 				<key>modifiers</key>
 				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitowards</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>C8E9F0A1-2B3C-4D5E-6F7A-8B9C0D1E2F3A</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>110802D2-8EA0-42A2-9E3F-EF61E70504E7</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitowards</key>
+				<string></string>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>110802D2-8EA0-42A2-9E3F-EF61E70504E7</string>
+				<key>modifiers</key>
+				<integer>524288</integer>
 				<key>modifiersubtext</key>
 				<string></string>
 				<key>vitowards</key>
@@ -225,42 +225,35 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>## Seek — SearXNG Search for Alfred
+	<string>## Seek: SearXNG for Alfred
 
-Private web search via your SearXNG instance with inline results.
+Private web search with inline results.
 
-### Quick Start
+[Report a bug](https://github.com/ggfevans/searxng-alfred-seek/issues/new) | [GitHub](https://github.com/ggfevans/searxng-alfred-seek)
 
-1. Set your SearXNG URL (must have JSON format enabled)
-2. Type `sx query` or `seek query` to search
+## Usage
+- Type `sx` or `seek` followed by your search query.
+	* &lt;kbd&gt;⏎&lt;/kbd&gt;: Open result in browser.
+	* &lt;kbd&gt;⌥⏎&lt;/kbd&gt;: Open in SearXNG web UI.
+	* &lt;kbd&gt;⌘C&lt;/kbd&gt;: Copy URL.
+	* &lt;kbd&gt;⌘L&lt;/kbd&gt;: Large type (full details).
+	* &lt;kbd&gt;⇧&lt;/kbd&gt;: Quick Look preview.
 
-### Search Modifiers
-
-Use bang commands in your query for filtering:
-
-**Categories:** `!images`, `!news`, `!videos`, `!it`, `!science`, `!files`, `!music`, `!social`
-**Time ranges:** `!d` (day), `!w` (week), `!m` (month), `!y` (year)
-
-Example: `sx !images !m cats` — images from the past month
-
-### Keyboard Shortcuts
-
-| Key | Action |
-|-----|--------|
-| ↩ | Open in browser |
-| ⌥↩ | Open in SearXNG web UI |
-| ⌘C | Copy URL |
-| ⌘L | Large Type (full details) |
-| ⇧ / ⌘Y | Quick Look preview |
-
-### Favicons (Self-hosted)
-
-To show website favicons, add your secret_key from settings.yml (server.secret_key). Requires favicon_resolver enabled in your SearXNG config.
-
-### Fallback Search
-
-Replace default web search: Alfred Preferences → Features → Default Results → Setup fallback results → Add "Seek"
-</string>
+## Search Modifiers
+- **Categories** — filter by content type:
+	* `!images` — image results
+	* `!news` — news articles
+	* `!videos` — video results
+	* `!it` — IT/tech content
+	* `!science` — scientific content
+	* `!files` — file downloads
+	* `!music` — music content
+	* `!social` — social media
+- **Time range** — filter by recency:
+	* `!d` — past day
+	* `!w` — past week
+	* `!m` — past month
+	* `!y` — past year</string>
 	<key>uidata</key>
 	<dict>
 		<key>110802D2-8EA0-42A2-9E3F-EF61E70504E7</key>
@@ -268,7 +261,7 @@ Replace default web search: Alfred Preferences → Features → Default Results 
 			<key>xpos</key>
 			<real>270</real>
 			<key>ypos</key>
-			<real>50.0</real>
+			<real>50</real>
 		</dict>
 		<key>A7087C90-0C31-4269-983C-868379879BA7</key>
 		<dict>

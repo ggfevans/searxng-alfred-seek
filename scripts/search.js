@@ -226,11 +226,12 @@ function parseAutocompleteResponse(responseData) {
 /**
  * Convert an autocomplete suggestion to an Alfred item.
  * @param {string} suggestion - Suggestion text
+ * @param {string} searxngUrl - Base SearXNG URL
  * @param {string|null} category - Inherited category from bangs
  * @param {string|null} timeRange - Inherited time range from bangs
  * @returns {object} Alfred item
  */
-function suggestionToAlfredItem(suggestion, category, timeRange) {
+function suggestionToAlfredItem(suggestion, searxngUrl, category, timeRange) {
 	// Build contextual subtitle
 	let subtitle = "Search";
 	if (category) {
@@ -242,10 +243,19 @@ function suggestionToAlfredItem(suggestion, category, timeRange) {
 	}
 	subtitle += " for this suggestion";
 
+	// Build search URL for the suggestion
+	let searchUrl = `${searxngUrl}/search?q=${encodeURIComponent(suggestion)}`;
+	if (category) {
+		searchUrl += `&categories=${encodeURIComponent(category)}`;
+	}
+	if (timeRange) {
+		searchUrl += `&time_range=${encodeURIComponent(timeRange)}`;
+	}
+
 	const item = {
 		title: suggestion,
 		subtitle: subtitle,
-		arg: suggestion,
+		arg: searchUrl,
 		autocomplete: suggestion,
 		valid: true,
 		icon: { path: "icon.png" },
@@ -811,7 +821,7 @@ function search(query) {
 	// Fetch autocomplete suggestions (always, for any query length)
 	const suggestions = fetchAutocomplete(cleanQuery, searxngUrl, timeoutSecs);
 	const suggestionItems = suggestions.map((s) =>
-		suggestionToAlfredItem(s, parsed.category, parsed.timeRange)
+		suggestionToAlfredItem(s, searxngUrl, parsed.category, parsed.timeRange)
 	);
 
 	// Short queries: return autocomplete only for speed

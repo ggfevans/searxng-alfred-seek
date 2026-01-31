@@ -74,7 +74,7 @@ describe("parseAutocompleteResponse", () => {
 
 // Extract suggestionToAlfredItem function
 const suggestionFn = searchJs.match(
-	/function suggestionToAlfredItem\(suggestion, category, timeRange\) \{[\s\S]*?\n\}/
+	/function suggestionToAlfredItem\(suggestion, searxngUrl, category, timeRange\) \{[\s\S]*?\n\}/
 );
 if (!suggestionFn) {
 	throw new Error("Could not find suggestionToAlfredItem function in search.js");
@@ -82,34 +82,39 @@ if (!suggestionFn) {
 // eslint-disable-next-line no-eval
 const suggestionToAlfredItem = eval(`(${suggestionFn[0]})`);
 
+const MOCK_SEARXNG_URL = "https://search.example.com";
+
 describe("suggestionToAlfredItem", () => {
-	it("creates basic suggestion item", () => {
-		const item = suggestionToAlfredItem("climate change", null, null);
+	it("creates basic suggestion item with search URL", () => {
+		const item = suggestionToAlfredItem("climate change", MOCK_SEARXNG_URL, null, null);
 		assert.strictEqual(item.title, "climate change");
 		assert.strictEqual(item.subtitle, "Search for this suggestion");
-		assert.strictEqual(item.arg, "climate change");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=climate%20change");
 		assert.strictEqual(item.autocomplete, "climate change");
 		assert.strictEqual(item.valid, true);
 		assert.deepStrictEqual(item.icon, { path: "icon.png" });
 	});
 
-	it("inherits category in subtitle", () => {
-		const item = suggestionToAlfredItem("mountains", "images", null);
+	it("inherits category in subtitle and URL", () => {
+		const item = suggestionToAlfredItem("mountains", MOCK_SEARXNG_URL, "images", null);
 		assert.strictEqual(item.subtitle, "Search images for this suggestion");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=mountains&categories=images");
 	});
 
-	it("inherits time range in subtitle", () => {
-		const item = suggestionToAlfredItem("news", null, "day");
+	it("inherits time range in subtitle and URL", () => {
+		const item = suggestionToAlfredItem("news", MOCK_SEARXNG_URL, null, "day");
 		assert.strictEqual(item.subtitle, "Search (past day) for this suggestion");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=news&time_range=day");
 	});
 
 	it("inherits both category and time range", () => {
-		const item = suggestionToAlfredItem("events", "news", "month");
+		const item = suggestionToAlfredItem("events", MOCK_SEARXNG_URL, "news", "month");
 		assert.strictEqual(item.subtitle, "Search news (past month) for this suggestion");
+		assert.strictEqual(item.arg, "https://search.example.com/search?q=events&categories=news&time_range=month");
 	});
 
 	it("includes variables for bang context", () => {
-		const item = suggestionToAlfredItem("test", "images", "month");
+		const item = suggestionToAlfredItem("test", MOCK_SEARXNG_URL, "images", "month");
 		assert.deepStrictEqual(item.variables, {
 			category: "images",
 			timeRange: "month"
@@ -117,7 +122,7 @@ describe("suggestionToAlfredItem", () => {
 	});
 
 	it("omits variables when no bang context", () => {
-		const item = suggestionToAlfredItem("test", null, null);
+		const item = suggestionToAlfredItem("test", MOCK_SEARXNG_URL, null, null);
 		assert.strictEqual(item.variables, undefined);
 	});
 });
